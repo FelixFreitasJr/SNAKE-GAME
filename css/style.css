@@ -43,7 +43,7 @@ canvas{
     z-index: 1;
 }
 
-.game-over{
+.message{
     text-transform: uppercase;
     font-weight: 700;
     font-size: 3rem;
@@ -67,4 +67,11 @@ canvas{
     justify-content: center;
     gap: 5px;
     cursor:pointer;
+}
+
+.pause-info {
+    margin-top: 10px;
+    font-size: 1rem;
+    color: #fff;
+    text-align: center;
 }

@@ -4,7 +4,9 @@ const ctx = canvas.getContext("2d")
 const score = document.querySelector(".score--value")
 const finalScore = document.querySelector(".final-score > span")
 const menu = document.querySelector(".menu-screen")
+const p = document.querySelector("p")
 const buttonPlay = document.querySelector(".btn-play")
+const message = document.querySelector(".message")
 
 const audio = new Audio('assets/audio.mp3')
 
@@ -13,6 +15,7 @@ const size = 30
 const initialPosition = { x: 270, y: 240}
 
 let snake = [initialPosition]
+let jogoPausado = false
 
 const incrementScore = () => {
     score.innerText = +score.innerText + 10
@@ -53,7 +56,7 @@ const drawFood = () => {
     ctx.shadowBlur = 0
 }
 
-const drwSnake = () => {
+const drawSnake = () => {
     ctx.fillStyle = "#ddd"
     
     snake.forEach((position, index) => {
@@ -66,7 +69,7 @@ const drwSnake = () => {
 }
 
 const moveSnake = () => {
-    if (!direction) return
+    if (!direction || jogoPausado) return
 
     const head = snake[snake.length - 1]
 
@@ -106,7 +109,7 @@ const drawGrid = () => {
     }    
 }
 
-const chackEat = () => {
+const checkEat = () => {
     const head = snake[snake.length - 1]
 
     if (head.x == food.x && head.y == food.y) {
@@ -148,21 +151,40 @@ const checkCollision = () => {
 
 const gameOver = () => {
     direction = undefined
+    jogoPausado = true
 
+    message.innerText = "Game Over"
     menu.style.display = "flex"
     finalScore.innerText = score.innerText
     canvas.style.filter = "blur(2px)"
+    p.style.display = "none"
+}
+
+const gamePaused = () => {
+    jogoPausado = !jogoPausado
+
+    if (jogoPausado) {
+        message.innerText = "Game Paused"
+        menu.style.display = "flex"
+        finalScore.innerText = score.innerText
+        canvas.style.filter = "blur(2px)"
+        p.style.display = "flex"
+    } else {
+        menu.style.display = "none"
+        canvas.style.filter = "none"
+        gameLoop()
+    }
 }
 
 const gameLoop = () => {
-    clearInterval(loopId)
+    if (jogoPausado) return
 
     ctx.clearRect(0,0, 600, 600) 
     drawGrid()
     drawFood()
     moveSnake()
-    drwSnake()
-    chackEat()
+    drawSnake()
+    checkEat()
     checkCollision()
 
     loopId = setTimeout(() => {
@@ -170,8 +192,20 @@ const gameLoop = () => {
     }, 300)
 }
 
-gameLoop()
+const resetGame = () => {
+    score.innerText = "00"
+    snake = [initialPosition]
+    direction = undefined
+    jogoPausado = false
+    food.x = randomPosition()
+    food.y = randomPosition()
+    food.color = randomColor()
+    menu.style.display = "none"
+    canvas.style.filter = "none"
+    gameLoop()
+}
 
+gameLoop()
 
 document.addEventListener("keydown", ({ key }) => {
     if (key == "ArrowRight" && direction !== "left"){
@@ -189,12 +223,12 @@ document.addEventListener("keydown", ({ key }) => {
     if (key == "ArrowUp" && direction !== "down"){
         direction = "up"
     }
+
+    if (key === 'p' || key === 'P'){
+        gamePaused()
+    }
 })
 
 buttonPlay.addEventListener("click", () => {
-    score.innerText = "00"
-    menu.style.display = "none"
-    canvas.style.filter = "none"
-
-    snake = [initialPosition]
+    resetGame()
 })
